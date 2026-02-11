@@ -19,7 +19,10 @@ jobs:
 
       - name: Generate smartdns config
         run: |
-          sort -u domains.txt | sed 's/^/nameserver \\/./' | sed 's/$/\\/iran/' > iran.conf
+          sort -u domains.txt \
+          | sed 's|^|nameserver /.|; s|$|/iran|' \
+          > iran.conf
+
 
       - name: Commit if changed
         run: |
