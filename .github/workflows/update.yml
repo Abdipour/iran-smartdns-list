@@ -18,19 +18,29 @@ jobs:
 
       - name: Download domains list
         run: |
-          curl -L -o domains.txt https://github.com/bootmortis/iran-hosted-domains/releases/latest/download/domains.txt
+          curl -L -o domains.txt \
+          https://github.com/bootmortis/iran-hosted-domains/releases/latest/download/domains.txt
 
-      - name: Generate smartdns config
+      - name: Generate iran.conf
         run: |
-          sort -u domains.txt \
-          | sed 's|^|nameserver /.|; s|$|/iran|' \
-          > iran.conf
+          echo "nameserver /ir/iran" > iran.conf
 
+          grep -v '\.ir$' domains.txt \
+            | sort -u \
+            | sed 's/^/nameserver \\/./' \
+            | sed 's/$/\\/iran/' \
+            >> iran.conf
 
       - name: Commit if changed
         run: |
           git config user.name "github-actions"
-          git config user.email "actions@github.com"
+          git config user.email "github-actions@github.com"
+
           git add iran.conf
-          git commit -m "Weekly update" || echo "No changes"
-          git push
+
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Weekly update"
+            git push
+          fi
