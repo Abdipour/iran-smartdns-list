@@ -27,8 +27,7 @@ jobs:
 
           grep -v '\.ir$' domains.txt \
             | sort -u \
-            | sed 's/^/nameserver \\/./' \
-            | sed 's/$/\\/iran/' \
+            | sed 's|^|nameserver /.|; s|$|/iran|' \
             >> iran.conf
 
       - name: Commit if changed
