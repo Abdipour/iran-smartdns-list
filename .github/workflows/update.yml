@@ -1,0 +1,30 @@
+name: Update Iran SmartDNS List
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'   # Weekly Sunday 03:00 UTC
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download domains list
+        run: |
+          curl -L -o domains.txt https://github.com/bootmortis/iran-hosted-domains/releases/latest/download/domains.txt
+
+      - name: Generate smartdns config
+        run: |
+          sort -u domains.txt | sed 's/^/nameserver \\/./' | sed 's/$/\\/iran/' > iran.conf
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add iran.conf
+          git commit -m "Weekly update" || echo "No changes"
+          git push
